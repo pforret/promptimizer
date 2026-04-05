@@ -76,7 +76,7 @@ def test_export_content(tmp_path):
     content = f.read_text()
     assert "openai/gpt-4o" in content
     assert "Hello there!" in content
-    assert "$0.001000" in content
+    assert "$1.00/1Ki" in content
 
     f2 = tmp_path / "test" / "hello" / "20260405.claude-sonnet-4.2.md"
     content2 = f2.read_text()

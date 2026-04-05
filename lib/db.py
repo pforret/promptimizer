@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS invocations (
     prompt_name     TEXT NOT NULL,
     prompt_version  TEXT NOT NULL DEFAULT '1',
     full_prompt     TEXT NOT NULL,
+    system_prompt   TEXT,
+    system_version  TEXT,
     model_id        TEXT NOT NULL,
     model_name      TEXT,
     temperature     REAL DEFAULT 1.0,
@@ -40,6 +42,12 @@ def get_db(db_path: str | Path | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(str(path), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.executescript(_SCHEMA)
+    # Migrate: add columns if missing (for existing DBs)
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(invocations)").fetchall()}
+    if "system_prompt" not in existing:
+        conn.execute("ALTER TABLE invocations ADD COLUMN system_prompt TEXT")
+    if "system_version" not in existing:
+        conn.execute("ALTER TABLE invocations ADD COLUMN system_version TEXT")
     return conn
 
 
@@ -51,6 +59,7 @@ def recreate_db(conn: sqlite3.Connection) -> None:
 def insert_invocation(conn: sqlite3.Connection, **kwargs) -> int:
     cols = [
         "prompt_topic", "prompt_name", "prompt_version", "full_prompt",
+        "system_prompt", "system_version",
         "model_id", "model_name", "temperature", "max_tokens",
         "response_format", "response_schema", "full_response",
         "prompt_tokens", "completion_tokens", "total_tokens",
@@ -97,6 +106,12 @@ def list_invocations(
 def update_cost(conn: sqlite3.Connection, inv_id: int, cost_usd: float) -> None:
     conn.execute("UPDATE invocations SET cost_usd = ? WHERE id = ?", (cost_usd, inv_id))
     conn.commit()
+
+
+def delete_invocation(conn: sqlite3.Connection, inv_id: int) -> bool:
+    cur = conn.execute("DELETE FROM invocations WHERE id = ?", (inv_id,))
+    conn.commit()
+    return cur.rowcount > 0
 
 
 def get_stats(conn: sqlite3.Connection) -> dict:

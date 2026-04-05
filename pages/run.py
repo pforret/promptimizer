@@ -21,6 +21,7 @@ from lib.prompts import (
     extract_variables,
     render_template,
     prompt_version,
+    get_system_prompt,
 )
 
 
@@ -112,10 +113,19 @@ with st.sidebar:
 st.subheader("Prompt")
 if meta.get("description"):
     st.caption(meta["description"])
-if meta.get("system"):
-    st.info(f"**System**: {meta['system']}")
+system_prompt = meta.get("system") or get_system_prompt(topic)
+if system_prompt:
+    source = "frontmatter" if meta.get("system") else "system.md"
+    with st.expander(f"System prompt ({source})", expanded=False):
+        st.markdown(system_prompt)
 
-st.code(body, language="markdown")
+body_lines = body.split("\n")
+if len(body_lines) > 12:
+    st.markdown("\n".join(body_lines[:12]))
+    with st.expander(f"Show full prompt ({len(body_lines)} lines)"):
+        st.markdown(body)
+else:
+    st.markdown(body)
 
 # --- Variable inputs ---
 variables = extract_variables(body)
@@ -136,8 +146,8 @@ if st.button("Run", type="primary", width="stretch"):
 
     # Build messages
     messages: list[dict] = []
-    if meta.get("system"):
-        messages.append({"role": "system", "content": meta["system"]})
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
 
     if uploaded:
         media_bytes = uploaded.getvalue()
@@ -204,7 +214,10 @@ if st.button("Run", type="primary", width="stretch"):
         insert_invocation(
             _db(),
             prompt_topic=topic, prompt_name=name, prompt_version=version,
-            full_prompt=rendered_body, model_id=model,
+            full_prompt=rendered_body,
+            system_prompt=system_prompt or None,
+            system_version=prompt_version(system_prompt) if system_prompt else None,
+            model_id=model,
             temperature=temperature, max_tokens=max_tokens,
             status="error", error_message=str(e),
         )
@@ -219,6 +232,8 @@ if st.button("Run", type="primary", width="stretch"):
         prompt_name=name,
         prompt_version=version,
         full_prompt=rendered_body,
+        system_prompt=system_prompt or None,
+        system_version=prompt_version(system_prompt) if system_prompt else None,
         model_id=model,
         model_name=model,
         temperature=temperature,

@@ -38,10 +38,10 @@ if not invocations:
 # Preview
 with st.expander("Preview invocations"):
     for inv in invocations[:10]:
-        cost_str = f"${inv['cost_usd']:.6f}" if inv.get("cost_usd") else "pending"
+        cpmi = f"${inv['cost_usd'] * 1000:.2f}/1Ki" if inv.get("cost_usd") else "pending"
         st.markdown(
             f"- **#{inv['id']}** {inv['prompt_topic']}/{inv['prompt_name']} "
-            f"| {inv['model_id']} | {cost_str} | {inv['created_at']}"
+            f"| {inv['model_id']} | {cpmi} | {inv['created_at']}"
         )
     if len(invocations) > 10:
         st.caption(f"... and {len(invocations) - 10} more")

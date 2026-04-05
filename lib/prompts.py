@@ -24,6 +24,8 @@ def list_prompts(topic: str | None = None) -> list[dict]:
         if not d.exists():
             continue
         for f in sorted(d.glob("*.md")):
+            if f.stem == "system":
+                continue
             results.append({
                 "topic": d.name,
                 "name": f.stem,
@@ -53,6 +55,14 @@ def delete_prompt(topic: str, name: str) -> bool:
             path.parent.rmdir()
         return True
     return False
+
+
+def get_system_prompt(topic: str) -> str | None:
+    """Read system.md from a topic folder, if it exists."""
+    path = PROMPTS_DIR / topic / "system.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    return None
 
 
 def prompt_version(content: str) -> str:

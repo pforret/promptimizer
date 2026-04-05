@@ -32,7 +32,9 @@ def export_invocations(invocations: list[dict], output_dir: Path | None = None) 
         file_dir.mkdir(parents=True, exist_ok=True)
         file_path = file_dir / f"{date_str}.{model_short}.{uniq}.md"
 
-        cost_str = f"${inv['cost_usd']:.6f}" if inv.get("cost_usd") else "pending"
+        cpmi = f"${inv['cost_usd'] * 1000:.2f}/1Ki" if inv.get("cost_usd") else "pending"
+        latency_ms = inv.get("latency_ms")
+        latency_str = f"{latency_ms / 1000:.1f}s" if latency_ms else "?"
         lines = [
             f"# {topic} / {name} / {inv['model_id']}",
             "",
@@ -40,8 +42,8 @@ def export_invocations(invocations: list[dict], output_dir: Path | None = None) 
             f"- **Model**: {inv['model_id']}",
             f"- **Temperature**: {inv.get('temperature', 'N/A')}",
             f"- **Tokens**: {inv.get('prompt_tokens', '?')} / {inv.get('completion_tokens', '?')} / {inv.get('total_tokens', '?')}",
-            f"- **Cost**: {cost_str}",
-            f"- **Latency**: {inv.get('latency_ms', '?')} ms",
+            f"- **CPMI**: {cpmi}",
+            f"- **Latency**: {latency_str}",
             f"- **Version**: {inv.get('prompt_version', '?')}",
             "",
             "## Prompt",
