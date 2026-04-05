@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({k:d.get\\(k\\) for k in ['repository','homepage','description','keywords','exports']}, indent=2, default=str\\)\\)\")",
+      "WebFetch(domain:openrouter.ai)",
+      "WebFetch(domain:github.com)",
+      "Bash(xargs cat:*)",
+      "Bash(uv --version)"
+    ]
+  }
+}

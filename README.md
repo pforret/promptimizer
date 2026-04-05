@@ -1,2 +1,1 @@
-# promptimizer
-Framework for prompt comparison and optimisation
+docs/index.md

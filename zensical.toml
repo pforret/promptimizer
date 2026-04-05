@@ -1,0 +1,71 @@
+[project]
+site_name = "Promptimizer Docs"
+site_url = "http://promptimizer.test"
+site_description = "Promptimizer Docs by pforret"
+copyright = "&copy; 2026 Promptimizer Docs &bull; pforret"
+
+[project.theme]
+name = "material"
+custom_dir = "docs/overrides"
+logo = "icon/android-chrome-192x192.png"
+favicon = "icon/android-chrome-192x192.png"
+features = [
+  "announce.dismiss",
+  "content.code.copy",
+  "header.autohide",
+  "navigation.instant",
+  "navigation.integrate",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.tracking",
+  "search.highlight",
+  "search.suggest",
+  "toc.integrate",
+]
+
+[[project.theme.palette]]
+primary = "red"
+
+[project.theme.font]
+text = "Nunito"
+
+[project.markdown.extensions]
+admonition = {}
+abbr = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+
+[project.markdown.extensions.toc]
+permalink = true
+
+[project.markdown.extensions."pymdownx.caret"]
+[project.markdown.extensions."pymdownx.critic"]
+[project.markdown.extensions."pymdownx.details"]
+[project.markdown.extensions."pymdownx.keys"]
+[project.markdown.extensions."pymdownx.mark"]
+[project.markdown.extensions."pymdownx.snippets"]
+[project.markdown.extensions."pymdownx.tilde"]
+
+[project.markdown.extensions."pymdownx.tabbed"]
+alternate_style = true
+
+[project.markdown.extensions."pymdownx.tasklist"]
+custom_checkbox = true
+
+[project.markdown.extensions."pymdownx.emoji"]
+emoji_index = "material.extensions.emoji.twemoji"
+emoji_generator = "material.extensions.emoji.to_svg"
+
+[project.markdown.extensions."pymdownx.superfences"]
+custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+
+[project.plugins.search]
+
+[project.plugins.awesome-pages]
+
+[project.extra]
+generator = false
