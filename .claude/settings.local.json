@@ -6,7 +6,14 @@
       "WebFetch(domain:openrouter.ai)",
       "WebFetch(domain:github.com)",
       "Bash(xargs cat:*)",
-      "Bash(uv --version)"
+      "Bash(uv --version)",
+      "Bash(uv init:*)",
+      "Bash(uv add:*)",
+      "Bash(timeout 10 uv run streamlit run app.py --server.headless true)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(uv run:*)",
+      "Bash(find:*)",
+      "Bash(git:*)"
     ]
   }
 }

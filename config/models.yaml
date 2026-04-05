@@ -1,0 +1,68 @@
+# Promptimizer model configuration
+# Edit this file to change available models and defaults
+# Prices are USD per million tokens (as of 2026-04-05)
+
+defaults:
+  text_model: openai/gpt-4.1
+  vision_model: anthropic/claude-sonnet-4.6
+  video_model: google/gemini-2.5-pro
+  temperature: 0.7
+  max_tokens: 4096
+
+models:
+  # --- TEXT models (no image/video input) ---
+  # Best + runner-up per provider
+  text:
+    # OpenAI: o3-mini for reasoning, gpt-4 legacy but capable
+    - openai/o3-mini                    # ctx=200k  in=$1.10  out=$4.40
+    - openai/o3-mini-high               # ctx=200k  in=$1.10  out=$4.40 (more reasoning)
+    # Mistral: large for quality, codestral for code
+    - mistralai/mistral-large           # ctx=128k  in=$2.00  out=$6.00
+    - mistralai/codestral-2508          # ctx=256k  in=$0.30  out=$0.90
+    # Anthropic: (text-only models are in vision category on OpenRouter)
+    # Google: gemma only in text-only
+    - google/gemma-2-27b-it             # ctx=8k    in=$0.65  out=$0.65
+    # Minimax
+    - minimax/minimax-m1                # ctx=1M    in=$0.40  out=$2.20
+    - minimax/minimax-m2.7              # ctx=205k  in=$0.30  out=$1.20
+    # Qwen
+    - qwen/qwen3-max                    # ctx=262k  in=$0.78  out=$3.90
+    - qwen/qwen3-coder-plus             # ctx=1M    in=$0.65  out=$3.25
+
+  # --- VISION models (image input, no video) ---
+  # Best + runner-up per provider
+  vision:
+    # OpenAI
+    - openai/gpt-4.1                    # ctx=1M    in=$2.00  out=$8.00
+    - openai/gpt-4.1-mini               # ctx=1M    in=$0.40  out=$1.60
+    # Mistral
+    - mistralai/mistral-large-2512      # ctx=262k  in=$0.50  out=$1.50
+    - mistralai/pixtral-large-2411      # ctx=131k  in=$2.00  out=$6.00
+    # Anthropic
+    - anthropic/claude-sonnet-4.6       # ctx=1M    in=$3.00  out=$15.00
+    - anthropic/claude-haiku-4.5        # ctx=200k  in=$1.00  out=$5.00
+    # Google
+    - google/gemini-2.5-flash-image     # ctx=33k   in=$0.30  out=$2.50
+    # Minimax
+    - minimax/minimax-01                # ctx=1M    in=$0.20  out=$1.10
+    # Qwen
+    - qwen/qwen-vl-max                  # ctx=131k  in=$0.52  out=$2.08
+    - qwen/qwen3-vl-235b-a22b-thinking # ctx=131k  in=$0.26  out=$2.60
+
+  # --- VIDEO models (video + image input) ---
+  # Best + runner-up per provider
+  video:
+    # OpenAI: no video models on OpenRouter
+    # Mistral: no video models on OpenRouter
+    # Anthropic: no video models on OpenRouter
+    # Google
+    - google/gemini-2.5-pro             # ctx=1M    in=$1.25  out=$10.00
+    - google/gemini-2.5-flash           # ctx=1M    in=$0.30  out=$2.50
+    # Minimax: no video models
+    # Qwen
+    - qwen/qwen3.5-397b-a17b           # ctx=262k  in=$0.39  out=$2.34
+    - qwen/qwen3.5-plus-02-15          # ctx=1M    in=$0.26  out=$1.56
+    # Bytedance
+    - bytedance-seed/seed-1.6           # ctx=262k  in=$0.25  out=$2.00
+    # Nvidia
+    - nvidia/nemotron-nano-12b-v2-vl    # ctx=131k  in=$0.20  out=$0.60

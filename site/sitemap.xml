@@ -4,6 +4,18 @@
         <loc>http://promptimizer.test/</loc>
       </url>
       <url>
-        <loc>http://promptimizer.test/todo/PRPs/2026-04-05-prompt-optimisation-framework/</loc>
+        <loc>http://promptimizer.test/openrouter/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/openrouter/api/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/openrouter/models/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/openrouter/tips/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/todo/PRPs/done/2026-04-05-prompt-optimisation-framework/</loc>
       </url>
 </urlset>

@@ -1,37 +1,38 @@
-*.log
-*.pid
-*.pid.lock
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# Database
+database/*.sqlite
+
+# Secrets
 .env
-.eslintcache
-.grunt
-.lock-wscript
-.next
-.node_repl_history
-.npm
-.nuxt
-.nyc_output
-.parcel-cache
-.pnp.*
-.stylelintcache
-.temp
-.tern-port
-.vscode-test
-.yarn-integrity
-/.cache/
-/.yarn/*
-/build/Release
-/dist/
-/jspm_packages/
-/logs/
-/node_modules/
-/out/
-/web_modules/
-coverage
-lib-cov
-npm-debug.log*
-pids
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
-yarn-debug.log*
-yarn-error.log*
+
+# Media (large files)
+input/media/*
+!input/media/.gitignore
+
+# MkDocs build output
+/site/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Misc
+*.log
+coverage/
