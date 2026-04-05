@@ -4,6 +4,9 @@
         <loc>http://promptimizer.test/</loc>
       </url>
       <url>
+        <loc>http://promptimizer.test/input/prompts/Admissions%20Forecast/comparables-super-mario/</loc>
+      </url>
+      <url>
         <loc>http://promptimizer.test/openrouter/</loc>
       </url>
       <url>
@@ -14,6 +17,18 @@
       </url>
       <url>
         <loc>http://promptimizer.test/openrouter/tips/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/output/Admissions%20Forecast/Find%20comparable%20movies/20260405.gemini-2.5-pro.2/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/output/Admissions%20Forecast/Find%20comparable%20movies/20260405.gpt-4o.4/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/output/Admissions%20Forecast/Find%20comparable%20movies/20260405.mistral-large.5/</loc>
+      </url>
+      <url>
+        <loc>http://promptimizer.test/output/Admissions%20Forecast/Find%20comparable%20movies/20260405.qwen3-max.6/</loc>
       </url>
       <url>
         <loc>http://promptimizer.test/todo/PRPs/done/2026-04-05-prompt-optimisation-framework/</loc>

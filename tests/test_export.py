@@ -59,34 +59,48 @@ def _sample_invocations():
     ]
 
 
-def test_export_creates_files(tmp_path):
+def test_export_creates_individual_files(tmp_path):
     files = export_invocations(_sample_invocations(), output_dir=tmp_path)
-    assert len(files) == 3  # test/hello.md, other/summarize.md, index.md
+    assert len(files) == 3  # one per invocation
 
-    # Check index
-    index = tmp_path / "index.md"
-    assert index.exists()
-    content = index.read_text()
-    assert "test/hello" in content
-    assert "other/summarize" in content
+    # Check file paths match expected pattern
+    assert (tmp_path / "test" / "hello" / "20260405.gpt-4o.1.md").exists()
+    assert (tmp_path / "test" / "hello" / "20260405.claude-sonnet-4.2.md").exists()
+    assert (tmp_path / "other" / "summarize" / "20260405.gpt-4o.3.md").exists()
 
 
 def test_export_content(tmp_path):
     export_invocations(_sample_invocations(), output_dir=tmp_path)
 
-    hello_file = tmp_path / "test" / "hello.md"
-    assert hello_file.exists()
-    content = hello_file.read_text()
-    assert "Run #1" in content
-    assert "Run #2" in content
+    f = tmp_path / "test" / "hello" / "20260405.gpt-4o.1.md"
+    content = f.read_text()
     assert "openai/gpt-4o" in content
-    assert "anthropic/claude-sonnet-4" in content
     assert "Hello there!" in content
-    assert "pending" in content  # cost_usd=None for run #2
+    assert "$0.001000" in content
+
+    f2 = tmp_path / "test" / "hello" / "20260405.claude-sonnet-4.2.md"
+    content2 = f2.read_text()
+    assert "pending" in content2  # cost_usd=None
+
+
+def test_export_skips_failures(tmp_path):
+    invocations = [
+        {
+            "id": 10,
+            "prompt_topic": "t",
+            "prompt_name": "p",
+            "prompt_version": "v1",
+            "full_prompt": "test",
+            "model_id": "x/y",
+            "full_response": None,
+            "status": "error",
+            "created_at": "2026-04-05 12:00:00",
+        },
+    ]
+    files = export_invocations(invocations, output_dir=tmp_path)
+    assert len(files) == 0
 
 
 def test_export_empty(tmp_path):
     files = export_invocations([], output_dir=tmp_path)
-    assert len(files) == 1  # just index
-    index = tmp_path / "index.md"
-    assert index.exists()
+    assert len(files) == 0

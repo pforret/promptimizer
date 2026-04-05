@@ -1,10 +1,10 @@
 # Python
-__pycache__/
+*.egg-info/
 *.pyc
 *.pyo
-.venv/
-*.egg-info/
-.pytest_cache/
+/.pytest_cache/
+/.venv/
+/__pycache__/
 
 # Database
 database/*.sqlite
@@ -13,8 +13,8 @@ database/*.sqlite
 .env
 
 # Media (large files)
-input/media/*
-!input/media/.gitignore
+docs/input/media/*
+!docs/input/media/.gitignore
 
 # MkDocs build output
 /site/
@@ -36,3 +36,6 @@ Thumbs.db
 # Misc
 *.log
 coverage/
+
+# Claude Code
+/.claude/settings.local.json

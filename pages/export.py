@@ -51,9 +51,7 @@ if st.button("Export", type="primary", width="stretch"):
     with st.spinner("Exporting..."):
         files = export_invocations(invocations)
 
-    st.success(f"Exported {len(files)} files to `{OUTPUT_DIR}/`")
-    for f in files:
-        st.markdown(f"- `{f}`")
+    st.success(f"Exported {len(files)} invocations to `{OUTPUT_DIR}/`")
 
 # Show existing exports
 st.divider()
@@ -61,8 +59,10 @@ st.subheader("Existing exports")
 if OUTPUT_DIR.exists():
     md_files = sorted(OUTPUT_DIR.rglob("*.md"))
     if md_files:
-        for f in md_files:
+        for f in md_files[:50]:
             st.markdown(f"- `{f.relative_to(OUTPUT_DIR)}`")
+        if len(md_files) > 50:
+            st.caption(f"... and {len(md_files) - 50} more")
     else:
         st.info("No exports yet.")
 else:
