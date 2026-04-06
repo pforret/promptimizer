@@ -93,8 +93,8 @@ def list_invocations(
         sql += " AND prompt_topic = ?"
         params.append(prompt_topic)
     if prompt_name:
-        sql += " AND prompt_name = ?"
-        params.append(prompt_name)
+        sql += " AND prompt_name LIKE ?"
+        params.append(f"%{prompt_name}%")
     if model_id:
         sql += " AND model_id = ?"
         params.append(model_id)

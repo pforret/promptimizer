@@ -44,10 +44,12 @@ tab_browse, tab_stats = st.tabs(["Browse", "Stats"])
 # --- Browse tab ---
 with tab_browse:
     # Filters
-    col_topic, col_model, col_limit = st.columns(3)
+    col_topic, col_name, col_model, col_limit = st.columns(4)
     with col_topic:
         topics = ["All"] + list_topics()
         filter_topic = st.selectbox("Topic", topics, key="hist_topic")
+    with col_name:
+        filter_name = st.text_input("Prompt name", key="hist_name", placeholder="e.g. beautiful")
     with col_model:
         filter_model = st.text_input("Model filter", key="hist_model", placeholder="e.g. anthropic/")
     with col_limit:
@@ -56,6 +58,7 @@ with tab_browse:
     invocations = list_invocations(
         _db(),
         prompt_topic=filter_topic if filter_topic != "All" else None,
+        prompt_name=filter_name or None,
         model_id=filter_model or None,
         limit=limit,
     )
