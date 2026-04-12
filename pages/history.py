@@ -13,37 +13,78 @@ def _db():
     return get_db()
 
 
-def _parse_movies(response: str) -> list[dict] | None:
-    """Try to extract comparable_movies list from JSON response."""
+def _parse_items(response: str) -> list[dict] | None:
+    """Extract the first list-of-dicts from a JSON response."""
     if not response:
         return None
-    # Extract JSON block from markdown code fence or raw text
     m = re.search(r"```json?\s*\n(.*?)```", response, re.DOTALL)
     text = m.group(1) if m else response
     try:
         data = json.loads(text)
-        movies = data.get("comparable_movies") if isinstance(data, dict) else None
-        if isinstance(movies, list) and movies:
-            return sorted(movies, key=lambda x: x.get("title", "").lower())
     except (json.JSONDecodeError, AttributeError):
-        pass
+        return None
+    # If top-level is a list, use it directly
+    if isinstance(data, list) and data and isinstance(data[0], dict):
+        items = data
+    elif isinstance(data, dict):
+        # Find first value that is a non-empty list of dicts
+        items = None
+        for v in data.values():
+            if isinstance(v, list) and v and isinstance(v[0], dict):
+                items = v
+                break
+        if not items:
+            return None
+    else:
+        return None
+    # Sort by the first string-valued field (typically name/title/brand)
+    label_key = _label_key(items[0])
+    return sorted(items, key=lambda x: str(x.get(label_key, "")).lower())
+
+
+def _label_key(item: dict) -> str:
+    """Find the best field to use as display label (first short string field)."""
+    for k in ("title", "brand", "name", "label"):
+        if k in item:
+            return k
+    for k, v in item.items():
+        if isinstance(v, str) and len(v) < 100:
+            return k
+    return next(iter(item), "")
+
+
+def _score_key(item: dict) -> str | None:
+    """Find the best numeric field for comparison scoring."""
+    for k in ("similarity_score", "score", "cars_sold_europe", "sales", "count", "quantity"):
+        if k in item:
+            return k
+    for k, v in item.items():
+        if isinstance(v, (int, float)) and k not in ("year", "introduction_year", "release_year"):
+            return k
     return None
 
 
-def _movie_cell(movie: dict | None, bg: str, score_delta: float | None = None) -> str:
-    """Return an HTML div for a movie cell in the comparison table."""
+def _item_cell(item: dict | None, bg: str, label_key: str, score_key: str | None,
+               score_delta: float | None = None) -> str:
+    """Return an HTML div for an item cell in the comparison table."""
     style = f"padding:4px 8px;border-radius:4px;margin-bottom:2px;{bg}"
-    if movie is None:
+    if item is None:
         return f'<div style="{style}">&nbsp;</div>'
-    title = movie.get("title", "?")
-    year = str(movie.get("release_year", "")) or str(movie.get("release_date", "?"))[:4]
-    score = movie.get("similarity_score", "?")
-    score_str = str(score)
+    label = item.get(label_key, "?")
+    parts = [f"<b>{label}</b>"]
+    # Show a few extra fields inline
+    for k, v in item.items():
+        if k == label_key or k == "remarks":
+            continue
+        parts.append(f"{k}: {v}")
+        if len(parts) >= 4:
+            break
+    score_str = ""
     if score_delta is not None and score_delta != 0:
         color = "green" if score_delta > 0 else "crimson"
         sign = "+" if score_delta > 0 else ""
-        score_str += f' <span style="color:{color};font-weight:bold">({sign}{score_delta:g})</span>'
-    return f'<div style="{style}"><b>{title}</b> ({year}): {score_str}</div>'
+        score_str = f' <span style="color:{color};font-weight:bold">({sign}{score_delta:g})</span>'
+    return f'<div style="{style}">{" | ".join(parts)}{score_str}</div>'
 
 
 def _cpmi(cost_usd) -> str:
@@ -154,27 +195,31 @@ with tab_browse:
 
                     st.divider()
 
-                    movies_a = _parse_movies(inv_a.get("full_response", ""))
-                    movies_b = _parse_movies(inv_b.get("full_response", ""))
+                    items_a = _parse_items(inv_a.get("full_response", ""))
+                    items_b = _parse_items(inv_b.get("full_response", ""))
 
-                    if movies_a is not None or movies_b is not None:
-                        dict_a = {m.get("title", "").lower(): m for m in (movies_a or [])}
-                        dict_b = {m.get("title", "").lower(): m for m in (movies_b or [])}
-                        all_titles = sorted(set(dict_a) | set(dict_b))
+                    if items_a is not None or items_b is not None:
+                        sample = (items_a or items_b)[0]
+                        lk = _label_key(sample)
+                        sk = _score_key(sample)
+                        dict_a = {str(m.get(lk, "")).lower(): m for m in (items_a or [])}
+                        dict_b = {str(m.get(lk, "")).lower(): m for m in (items_b or [])}
+                        all_keys = sorted(set(dict_a) | set(dict_b))
 
-                        for title_key in all_titles:
-                            m_a = dict_a.get(title_key)
-                            m_b = dict_b.get(title_key)
+                        for item_key in all_keys:
+                            m_a = dict_a.get(item_key)
+                            m_b = dict_b.get(item_key)
 
                             bg_a = bg_b = ""
                             score_delta = None
                             if m_a and m_b:
-                                try:
-                                    score_delta = round(
-                                        float(m_b.get("similarity_score", 0)) - float(m_a.get("similarity_score", 0)), 2
-                                    )
-                                except (TypeError, ValueError):
-                                    pass
+                                if sk:
+                                    try:
+                                        score_delta = round(
+                                            float(m_b.get(sk, 0)) - float(m_a.get(sk, 0)), 2
+                                        )
+                                    except (TypeError, ValueError):
+                                        pass
                             elif m_a and not m_b:
                                 bg_a = "background-color:#ffe0e0;"
                             elif m_b and not m_a:
@@ -182,9 +227,9 @@ with tab_browse:
 
                             col_a, col_b = st.columns(2)
                             with col_a:
-                                st.markdown(_movie_cell(m_a, bg_a), unsafe_allow_html=True)
+                                st.markdown(_item_cell(m_a, bg_a, lk, sk), unsafe_allow_html=True)
                             with col_b:
-                                st.markdown(_movie_cell(m_b, bg_b, score_delta), unsafe_allow_html=True)
+                                st.markdown(_item_cell(m_b, bg_b, lk, sk, score_delta), unsafe_allow_html=True)
                     else:
                         col_a, col_b = st.columns(2)
                         with col_a:
