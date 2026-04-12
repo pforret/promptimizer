@@ -30,6 +30,22 @@ def _parse_movies(response: str) -> list[dict] | None:
     return None
 
 
+def _movie_cell(movie: dict | None, bg: str, score_delta: float | None = None) -> str:
+    """Return an HTML div for a movie cell in the comparison table."""
+    style = f"padding:4px 8px;border-radius:4px;margin-bottom:2px;{bg}"
+    if movie is None:
+        return f'<div style="{style}">&nbsp;</div>'
+    title = movie.get("title", "?")
+    year = str(movie.get("release_year", "")) or str(movie.get("release_date", "?"))[:4]
+    score = movie.get("similarity_score", "?")
+    score_str = str(score)
+    if score_delta is not None and score_delta != 0:
+        color = "green" if score_delta > 0 else "crimson"
+        sign = "+" if score_delta > 0 else ""
+        score_str += f' <span style="color:{color};font-weight:bold">({sign}{score_delta:g})</span>'
+    return f'<div style="{style}"><b>{title}</b> ({year}): {score_str}</div>'
+
+
 def _cpmi(cost_usd) -> str:
     """Format cost as CPMI (Cost Per Mille Inferences = cost * 1000)."""
     if cost_usd:
@@ -81,7 +97,7 @@ with tab_browse:
 
             col_check, col_exp = st.columns([0.05, 0.95])
             with col_check:
-                if st.checkbox("", key=f"sel_{inv['id']}", label_visibility="collapsed"):
+                if st.checkbox("Compare", key=f"sel_{inv['id']}", label_visibility="collapsed"):
                     selected_ids.append(inv["id"])
             with col_exp:
                 with st.expander(label):
@@ -124,25 +140,57 @@ with tab_browse:
                 if inv_a and inv_b:
                     st.divider()
                     st.subheader("Comparison")
+
+                    # Header metrics
                     col_a, col_b = st.columns(2)
-                    for col_idx, (col, inv) in enumerate([(col_a, inv_a), (col_b, inv_b)]):
+                    for col, inv in [(col_a, inv_a), (col_b, inv_b)]:
                         with col:
                             lat = inv.get("latency_ms")
                             st.markdown(f"### #{inv['id']} — `{inv['model_id'].rsplit('/', 1)[-1]}`")
-                            st.markdown(f"**Temp**: {inv.get('temperature')} | **Tokens**: {inv.get('total_tokens')} | **CPMI**: {_cpmi(inv.get('cost_usd'))} | **Latency**: {f'{lat / 1000:.1f}s' if lat else '?'}")
-                            st.divider()
-                            movies = _parse_movies(inv.get("full_response", ""))
-                            if movies:
-                                for i, movie in enumerate(movies):
-                                    title = movie.get("title", "?")
-                                    year = str(movie.get("release_year", "")) or movie.get("release_date", "?")[:4]
-                                    score = movie.get("similarity_score", "?")
-                                    with st.expander(f"**{title}** ({year}): {score}"):
-                                        for k, v in movie.items():
-                                            if k not in ("title", "release_date", "similarity_score"):
-                                                st.markdown(f"- **{k}**: {v}")
-                            else:
-                                st.markdown(inv.get("full_response", "") or "_No response_")
+                            st.markdown(
+                                f"**Temp**: {inv.get('temperature')} | **Tokens**: {inv.get('total_tokens')} | "
+                                f"**CPMI**: {_cpmi(inv.get('cost_usd'))} | **Latency**: {f'{lat / 1000:.1f}s' if lat else '?'}"
+                            )
+
+                    st.divider()
+
+                    movies_a = _parse_movies(inv_a.get("full_response", ""))
+                    movies_b = _parse_movies(inv_b.get("full_response", ""))
+
+                    if movies_a is not None or movies_b is not None:
+                        dict_a = {m.get("title", "").lower(): m for m in (movies_a or [])}
+                        dict_b = {m.get("title", "").lower(): m for m in (movies_b or [])}
+                        all_titles = sorted(set(dict_a) | set(dict_b))
+
+                        for title_key in all_titles:
+                            m_a = dict_a.get(title_key)
+                            m_b = dict_b.get(title_key)
+
+                            bg_a = bg_b = ""
+                            score_delta = None
+                            if m_a and m_b:
+                                try:
+                                    score_delta = round(
+                                        float(m_b.get("similarity_score", 0)) - float(m_a.get("similarity_score", 0)), 2
+                                    )
+                                except (TypeError, ValueError):
+                                    pass
+                            elif m_a and not m_b:
+                                bg_a = "background-color:#ffe0e0;"
+                            elif m_b and not m_a:
+                                bg_b = "background-color:#e0ffe0;"
+
+                            col_a, col_b = st.columns(2)
+                            with col_a:
+                                st.markdown(_movie_cell(m_a, bg_a), unsafe_allow_html=True)
+                            with col_b:
+                                st.markdown(_movie_cell(m_b, bg_b, score_delta), unsafe_allow_html=True)
+                    else:
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            st.markdown(inv_a.get("full_response", "") or "_No response_")
+                        with col_b:
+                            st.markdown(inv_b.get("full_response", "") or "_No response_")
         elif len(selected_ids) > 2:
             st.warning("Select exactly 2 invocations to compare.")
 
